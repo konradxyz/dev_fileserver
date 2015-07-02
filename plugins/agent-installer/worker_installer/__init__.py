@@ -262,15 +262,24 @@ def prepare_additional_configuration(ctx, agent_config, runner):
 
     home_dir = agent_config['home_dir']
     agent_config['celery_base_dir'] = home_dir
+    manager_uid = ctx.bootstrap_context.manager_uid
+    if manager_uid is None or is_on_management_worker(ctx):
+        manager_sufix = ''
+    else:
+        manager_sufix = '.{0}'.format(manager_uid)
 
-    agent_config['base_dir'] = '{0}/cloudify.{1}'.format(
-        home_dir, agent_config['name'])
-    agent_config['init_file'] = '/etc/init.d/celeryd-{0}'.format(
-        agent_config['name'])
-    agent_config['config_file'] = '/etc/default/celeryd-{0}'.format(
-        agent_config['name'])
+    agent_config['base_dir'] = '{0}/cloudify.{1}{2}'.format(
+        home_dir, agent_config['name'], manager_sufix)
+    agent_config['init_file'] = '/etc/init.d/celeryd-{0}{1}'.format(
+        agent_config['name'], manager_sufix)
+    agent_config['config_file'] = '/etc/default/celeryd-{0}{1}'.format(
+        agent_config['name'], manager_sufix)
     agent_config['includes_file'] = '{0}/work/celeryd-includes'.format(
         agent_config['base_dir'])
+    agent_config['service_name'] = 'celeryd-{0}{1}'.format(
+        agent_config['name'], manager_sufix)
+    agent_config['worker_modifier'] = '{0}{1}'.format(
+        agent_config['name'], manager_sufix)
 
     agent_config['disable_requiretty'] = _get_bool(agent_config,
                                                    'disable_requiretty',
