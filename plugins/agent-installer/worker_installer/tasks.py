@@ -241,7 +241,7 @@ def stop(ctx, runner, agent_config, **kwargs):
 
     if runner.exists(agent_config['init_file']):
         runner.run(
-            "sudo service celeryd-{0} stop".format(agent_config["name"]))
+            "sudo service {0} stop".format(agent_config["service_name"]))
     else:
         ctx.logger.debug(
             "Could not find any workers with name {0}. nothing to do."
@@ -257,7 +257,7 @@ def start(ctx, runner, agent_config, **kwargs):
         .format(agent_config['name'],
                 connection_details(agent_config)))
 
-    runner.run("sudo service celeryd-{0} start".format(agent_config["name"]))
+    runner.run("sudo service {0} start".format(agent_config["service_name"]))
 
     _wait_for_started(runner, agent_config)
 
@@ -290,7 +290,8 @@ def create_celery_configuration(ctx, runner, agent_config, resource_loader):
     config_template_values = {
         'includes_file_path': agent_config['includes_file'],
         'celery_base_dir': agent_config['celery_base_dir'],
-        'worker_modifier': agent_config['name'],
+        'worker_modifier': agent_config['worker_modifier'],
+        'queue_name': agent_config['name'],
         'management_ip': utils.get_manager_ip(),
         'broker_ip': utils.get_manager_ip(),
         'agent_ip': get_agent_ip(ctx, agent_config),
@@ -310,7 +311,7 @@ def create_celery_configuration(ctx, runner, agent_config, resource_loader):
     init_template = env.get_template(init_template_path)
     init_template_values = {
         'celery_base_dir': agent_config['celery_base_dir'],
-        'worker_modifier': agent_config['name']
+        'worker_modifier': agent_config['worker_modifier']
     }
 
     ctx.logger.debug(
@@ -343,8 +344,8 @@ def worker_exists(runner, agent_config):
 
 
 def restart_celery_worker(runner, agent_config):
-    runner.run("sudo service celeryd-{0} restart".format(
-        agent_config['name']))
+    runner.run("sudo service {0} restart".format(
+        agent_config['service_name']))
     _wait_for_started(runner, agent_config)
 
 
