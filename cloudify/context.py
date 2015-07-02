@@ -164,6 +164,7 @@ class BootstrapContext(object):
         policy_engine = bootstrap_context.get('policy_engine', {})
         self._cloudify_agent = self.CloudifyAgent(cloudify_agent)
         self._policy_engine = self.PolicyEngine(policy_engine)
+        self._manager_uid = bootstrap_context.get('manager_uid', None)
 
     @property
     def cloudify_agent(self):
@@ -190,6 +191,10 @@ class BootstrapContext(object):
         An empty string is returned if the resources prefix was not configured.
         """
         return self._bootstrap_context.get('resources_prefix', '')
+
+    @property
+    def manager_uid(self):
+        return self._manager_uid
 
 
 class EntityContext(object):
